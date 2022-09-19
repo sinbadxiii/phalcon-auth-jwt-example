@@ -1,0 +1,33 @@
+{
+  "0":
+  {
+    "name": "admin",
+    "password": "12345",
+    "email": "12345@12345.ru"
+  },
+  "1": {
+    "name": "admin2",
+    "password": "$2y$10$ME02QlQxWGdDNUdiUTJucuhQHYQlIglb3lG2rfdzvK3UbQXAPrc.q",
+    "email": ""
+  },
+  "2": {
+    "name": "admin3",
+    "password": "admin3",
+    "email": ""
+  },
+  "3": {
+    "name": "admin4",
+    "password": "admin4",
+    "email": ""
+  },
+  "4": {
+    "name": "admin5",
+    "password": "admin5",
+    "email": ""
+  },
+  "5": {
+    "name": "admin5",
+    "password": "admin6",
+    "email": ""
+  }
+}

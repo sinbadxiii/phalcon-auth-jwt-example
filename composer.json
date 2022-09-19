@@ -1,0 +1,30 @@
+{
+    "name": "sinbad/auth-package",
+    "authors": [
+        {
+            "name": "sinbad",
+            "email": "sinbadxiii@gmail.com"
+        }
+    ],
+    "require": {
+        "ext-mbstring": "*",
+        "lcobucci/jwt": "^4.1",
+        "nesbot/carbon": "^2.52",
+        "sinbadxiii/phalcon-auth": "^2.0"
+
+    },
+    "require-dev": {
+        "phalcon/ide-stubs": "^5.0.0-beta.1",
+        "phpunit/phpunit": "^9.5",
+        "mockery/mockery": "^1.4",
+        "phalcon/migrations": "^2.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sinbadxiii\\PhalconAuth\\Tests\\": "src/packages/sinbadxiii/phalcon-auth/tests/",
+            "Sinbadxiii\\PhalconAuthJWT\\": "src/packages/sinbadxiii/phalcon-auth-jwt/src/",
+            "Sinbadxiii\\PhalconAuthJWT\\Tests\\": "src/packages/sinbadxiii/phalcon-auth-jwt/tests/",
+            "App\\": "src/"
+        }
+    }
+}
