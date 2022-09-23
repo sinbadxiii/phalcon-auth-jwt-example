@@ -11,7 +11,7 @@ use Sinbadxiii\PhalconAuth\RememberingInterface;
 use Sinbadxiii\PhalconAuth\AuthenticatableInterface;
 use Sinbadxiii\PhalconAuth\RememberTokenInterface;
 
-use Sinbadxiii\PhalconAuthJWT\Contracts\JWTSubject;
+use Sinbadxiii\PhalconAuthJWT\JWTSubject;
 use function date;
 
 class User extends Model implements AuthenticatableInterface, RememberingInterface, JWTSubject

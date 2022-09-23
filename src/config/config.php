@@ -29,38 +29,6 @@ return new \Phalcon\Config\Config([
         'cacheDir'       => BASE_PATH . '/cache/',
         'baseUri'        => '/',
     ],
-    'auth' => [
-        'defaults' => [
-            'guard' => 'web',
-            'passwords' => 'users',
-        ],
-
-        'guards' => [
-            'web' => [
-                'driver' => 'session',
-                'provider' => 'admin_users',
-            ],
-            'api' => [
-                'driver' => 'jwt',
-                'provider' => 'users',
-            ],
-        ],
-        'providers' => [
-//            'admin_users' => [
-//                'driver' => 'file',
-//                'path'  => __DIR__ . "/users.json",
-//                'passsword_crypted' => false
-//            ],
-
-            'admin_users' => [
-                'driver' => 'model',
-                'model'  => \App\Models\Users::class,
-            ],
-        ],
-        'hash' => [
-            'method' => 'sha1'
-        ],
-    ],
     'cache' => [
         'default' => 'redis',
         'options' => [
@@ -83,6 +51,7 @@ return new \Phalcon\Config\Config([
             'passphrase' => "env('JWT_PASSPHRASE')",
         ],
 
+        //minutes
         'ttl' => 30,
 
         'max_refresh_period' => null,
@@ -112,5 +81,5 @@ return new \Phalcon\Config\Config([
             'jwt' => \Sinbadxiii\PhalconAuthJWT\Providers\JWT\Phalcon::class,
             'storage' => \Sinbadxiii\PhalconAuthJWT\Providers\Storage\Cache::class,
         ],
-        ]
+    ]
 ]);

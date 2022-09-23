@@ -2,7 +2,6 @@
 declare(strict_types=1);
 
 use App\Security\Authenticate;
-use App\Security\JWTAutheticate;
 use Phalcon\Cache\Cache;
 use Phalcon\Cache\AdapterFactory;
 use Phalcon\Escaper;
@@ -17,6 +16,14 @@ use Phalcon\Session\Manager as SessionManager;
 use Phalcon\Storage\SerializerFactory;
 use Phalcon\Url as UrlResolver;
 use Sinbadxiii\PhalconAuth\Manager;
+use Sinbadxiii\PhalconAuthJWT\Blacklist;
+use Sinbadxiii\PhalconAuthJWT\Builder;
+use Sinbadxiii\PhalconAuthJWT\Http\Parser\Chains\AuthHeaders;
+use Sinbadxiii\PhalconAuthJWT\Http\Parser\Chains\InputSource;
+use Sinbadxiii\PhalconAuthJWT\Http\Parser\Chains\QueryString;
+use Sinbadxiii\PhalconAuthJWT\Http\Parser\Parser;
+use Sinbadxiii\PhalconAuthJWT\JWT;
+use Sinbadxiii\PhalconAuthJWT\Manager as JWTManager;
 
 
 $di->setShared("dispatcher", function () use ($di) {
@@ -137,40 +144,68 @@ $di->setShared('session', function () {
     return $session;
 });
 
+$di->setShared("jwt", function () {
+
+    $configJwt = $this->getConfig()->path('jwt');
+
+    $providerJwt = $configJwt->providers->jwt;
+
+    $builder = new Builder();
+
+    $builder->lockSubject($configJwt->lock_subject)
+        ->setTTL($configJwt->ttl)
+        ->setRequiredClaims($configJwt->required_claims->toArray())
+        ->setLeeway($configJwt->leeway)
+        ->setMaxRefreshPeriod($configJwt->max_refresh_period);
+
+    $parser = new Parser($this->getRequest(), [
+        new AuthHeaders,
+        new QueryString,
+        new InputSource,
+    ]);
+
+    $providerStorage = $configJwt->providers->storage;
+
+    $blacklist = new Blacklist(new $providerStorage($this->getCache()));
+
+    $blacklist->setGracePeriod($configJwt->blacklist_grace_period);
+
+    $manager = new JWTManager(new $providerJwt(
+        $configJwt->secret,
+        $configJwt->algo,
+        $configJwt->keys->toArray()
+    ), $blacklist, $builder);
+
+    $manager->setBlacklistEnabled((bool) $configJwt->blacklist_enabled);
+
+    return new JWT($builder, $manager, $parser);
+});
+
+
 $di->setShared("auth", function () {
 
     $security = $this->getSecurity();
 
     $adapter     = new \Sinbadxiii\PhalconAuth\Adapter\Model($security);
     $adapter->setModel(App\Models\User::class);
-//    $adapter->setFileSource(__DIR__. "/users.json");
-//    $adapter->setData(
-//        [
-//                    ["name" => "admin", "username" => "admin", 'password' => '1234', "email" => "1234@1234.ru"],
-//                    ["name" => "admin1","username" => "admin1", 'password' => 'admin1', "email" => "admin1@admin.ru"],
-//                ]
-//    );
-    $guard = new \Sinbadxiii\PhalconAuthJWT\Guards\JWTGuard(
-        "web",
-        $adapter
-    );
 
+    $guard = new \Sinbadxiii\PhalconAuthJWT\Guard\JWTGuard(
+        $adapter,
+        $this->getJwt(),
+        $this->getRequest(),
+        $this->getEventsManager(),
+    );
 
     $manager = new Manager();
     $manager->addGuard("jwt", $guard);
     $manager->setDefaultGuard($guard);
 
+    $manager->setAccess(new \App\Security\Access\Jwt());
+    $manager->except("/auth/login");
+
     return $manager;
 });
 
-//$securityProvider = new \Sinbadxiii\PhalconFoundationAuth\Providers\SecurityProvider();
-//$securityProvider->register($di);
-
-$jwt = new \Sinbadxiii\PhalconAuthJWT\Providers\JWTServiceProvider();
-$jwt->register($di);
-
-//$cookieProvider = new \Sinbadxiii\PhalconFoundationAuth\Providers\CookiesProvider();
-//$cookieProvider->register($di);
 
 $di->setShared("cache", function () {
 

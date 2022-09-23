@@ -1,7 +1,11 @@
 <?php
 declare(strict_types=1);
 
+use App\Middlewares\AuthMiddleware;
+use App\Middlewares\MethodMiddleware;
+use App\Middlewares\ResponseMiddleware;
 use Phalcon\Di\FactoryDefault;
+use Phalcon\Events\Manager;
 
 error_reporting(E_ALL);
 
@@ -23,26 +27,76 @@ try {
     include APP_PATH . '/config/services.php';
 
     /**
-     * Handle routes
-     */
-    include APP_PATH . '/config/router.php';
-
-    /**
      * Get config service for use in inline setup below
      */
     $config = $di->getConfig();
 
     /**
-     * Include Autoloader
-     */
-    include APP_PATH . '/config/loader.php';
-
-    /**
      * Handle the request
      */
-    $application = new \Phalcon\Mvc\Application($di);
+    $application = new \Phalcon\Mvc\Micro($di);
 
-    echo $application->handle($_SERVER['REQUEST_URI'])->getContent();
+    $eventsManager = new Manager();
+
+    $eventsManager->attach('micro', new AuthMiddleware());
+    $application->before(new AuthMiddleware());
+
+    $eventsManager->attach('micro', new MethodMiddleware());
+    $application->before(new MethodMiddleware());
+
+    $eventsManager->attach('micro', new ResponseMiddleware());
+    $application->after(new ResponseMiddleware());
+
+    $application->post(
+        "/auth/logout",
+        function () {
+            $this->auth->logout();
+
+            return ['message' => 'Successfully logged out'];
+        }
+    );
+
+    $application->post(
+        "/auth/refresh",
+        function () {
+            $token = $this->auth->refresh();
+
+            return $token->toResponse();
+        }
+    );
+
+    $application->post(
+        '/auth/login',
+        function () {
+
+            $credentials = [
+                'email' => $this->request->getJsonRawBody()->email,
+                'password' => $this->request->getJsonRawBody()->password
+            ];
+
+            $this->auth->claims(['aud' => [
+                $this->request->getURI()
+            ]]);
+
+            if (! $token = $this->auth->attempt($credentials)) {
+                return ['error' => 'Unauthorized'];
+            }
+
+            return $token->toResponse();
+        }
+    );
+
+    $application->get(
+        '/',
+        function () {
+
+            return [
+                'message' => 'hello, my friend'
+            ];
+        }
+    );
+
+    $application->handle($_SERVER['REQUEST_URI']);
 } catch (\Exception $e) {
     echo $e->getMessage() . '<br>';
     echo '<pre>' . $e->getTraceAsString() . '</pre>';

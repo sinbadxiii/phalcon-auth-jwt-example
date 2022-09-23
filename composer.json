@@ -10,7 +10,8 @@
         "ext-mbstring": "*",
         "lcobucci/jwt": "^4.1",
         "nesbot/carbon": "^2.52",
-        "sinbadxiii/phalcon-auth": "^2.0"
+        "sinbadxiii/phalcon-auth": "^2.0",
+        "sinbadxiii/phalcon-auth-jwt": "dev-master"
 
     },
     "require-dev": {
@@ -20,11 +21,8 @@
         "phalcon/migrations": "^2.2"
     },
     "autoload": {
-        "psr-4": {
-            "Sinbadxiii\\PhalconAuth\\Tests\\": "src/packages/sinbadxiii/phalcon-auth/tests/",
-            "Sinbadxiii\\PhalconAuthJWT\\": "src/packages/sinbadxiii/phalcon-auth-jwt/src/",
-            "Sinbadxiii\\PhalconAuthJWT\\Tests\\": "src/packages/sinbadxiii/phalcon-auth-jwt/tests/",
-            "App\\": "src/"
-        }
+    "psr-4": {
+        "App\\": "src/"
     }
+}
 }
